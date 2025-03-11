@@ -1,5 +1,7 @@
 import { Bot, Keyboard, GrammyError, HttpError, InlineKeyboard } from "grammy";
 import "dotenv/config";
+import axios from "axios";
+import { getRandomGame } from "./getRandomGame.js";
 
 const bot = new Bot(process.env.BOT_API_KEY);
 
@@ -13,6 +15,12 @@ bot.command("start", async (context) => {
   await context.reply("Что вы хотите узнать?", { reply_markup: start });
 });
 
+bot.hears("game", async (context) => {
+  const id = await getRandomGame();
+
+  await context.reply(`https://store.steampowered.com/app/${id}/`);
+});
+
 bot.hears("бот", async (context) => {
   await context.reply("Здесь нет никаких ботов 🤫");
 });
@@ -20,7 +28,7 @@ bot.hears("бот", async (context) => {
 bot.hears("О приложении", async (context) => {
   const inlineKeyboard = new InlineKeyboard()
     .text("О NodeJs", "getNode")
-    .text("О grammY", "getgrammY");
+    .text("О grammY", "getGrammY");
   await context.reply(
     "Данное приложение создано на NodeJs с использованием библиотеки grammY.",
     { reply_markup: inlineKeyboard }
@@ -31,6 +39,12 @@ bot.on("callback_query:data", async (ctx) => {
   if (ctx.callbackQuery.data === "getNode") {
     await ctx.reply(
       "Node.js — это среда выполнения кода JavaScript вне браузера, которая позволяет писать серверный код для веб-страниц и веб-приложений, а также для программ командной строки."
+    );
+    await ctx.answerCallbackQuery();
+  }
+  if (ctx.callbackQuery.data === "getGrammY") {
+    await ctx.reply(
+      "grammY - JavaScript библиотека, позволяющая писать телеграм ботов и запускать их на различных платформах."
     );
     await ctx.answerCallbackQuery();
   }
