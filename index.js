@@ -1,24 +1,54 @@
-import { Bot, Keyboard, GrammyError, HttpError, InlineKeyboard } from "grammy";
+import {
+  Bot,
+  Keyboard,
+  GrammyError,
+  HttpError,
+  InlineKeyboard,
+  session,
+} from "grammy";
 import "dotenv/config";
 import axios from "axios";
 import { getRandomGame } from "./getRandomGame.js";
 
 const bot = new Bot(process.env.BOT_API_KEY);
 
+function initial() {
+  return {
+    adultContent: false,
+  };
+}
+
+bot.use(session({ initial }));
+
 bot.command("start", async (context) => {
   const start = new Keyboard()
     .text("Возможности")
     .text("О приложении")
+    .text("Случайная игра")
+    .text("Отключить цензуру 😏")
     .resized();
 
   await context.reply("Я готов к работе!");
   await context.reply("Что вы хотите узнать?", { reply_markup: start });
 });
 
-bot.hears("game", async (context) => {
-  const id = await getRandomGame();
+bot.hears("Случайная игра", async (context) => {
+  const adult = context.session.adultContent;
+  const id = await getRandomGame(adult);
 
   await context.reply(`https://store.steampowered.com/app/${id}/`);
+});
+
+bot.hears("Отключить цензуру 😏", async (context) => {
+  if (context.session.adultContent === true) {
+    context.session.adultContent = false;
+  } else {
+    context.session.adultContent = true;
+  }
+  console.log(context.session);
+  context.session.adultContent === true
+    ? await context.reply("Цензура отключена")
+    : await context.reply("Цензура включена");
 });
 
 bot.hears("бот", async (context) => {

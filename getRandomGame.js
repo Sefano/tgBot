@@ -10,9 +10,27 @@ const filteredArray = [
   "expansion",
   "lust",
   "hentai",
+  "18+",
+  "girl",
+  "woman",
+  "milf",
+  "bikini",
+  "cum",
+  "furry",
+  "pack",
 ];
 
-export const getRandomGame = async () => {
+const filteredArrayNoCens = [
+  "gay",
+  "lesbian",
+  "dlc",
+  "soundtrack",
+  "ost",
+  "expansion",
+  "pack",
+];
+
+export const getRandomGame = async (adult) => {
   let badGame = true;
 
   const response = await axios.get(
@@ -23,7 +41,12 @@ export const getRandomGame = async () => {
     try {
       let i = Math.floor(Math.random() * response.data.applist.apps.length);
       const title = response.data.applist.apps[i].name;
-      const censorResult = filterTitle(title, filteredArray);
+      const censorResult = filterTitle(
+        title,
+        filteredArray,
+        filteredArrayNoCens,
+        adult
+      );
       if (censorResult) {
         console.log("Bad game!");
       } else {
@@ -38,12 +61,21 @@ export const getRandomGame = async () => {
   }
 };
 
-const filterTitle = (title, filteredArray) => {
+const filterTitle = (title, filteredArray, filteredArrayNoCens, adult) => {
   title = title.toLowerCase();
-  for (const word of filteredArray) {
-    if (title.includes(word.toLowerCase())) {
-      return true;
+  if (adult === false) {
+    for (const word of filteredArray) {
+      if (title.includes(word.toLowerCase())) {
+        return true;
+      }
     }
+    return false;
+  } else {
+    for (const word of filteredArrayNoCens) {
+      if (title.includes(word.toLowerCase())) {
+        return true;
+      }
+    }
+    return false;
   }
-  return false;
 };
